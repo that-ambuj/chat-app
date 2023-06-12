@@ -1,0 +1,9 @@
+
+[workspace]
+members = [
+	'libs/api',
+	'apps/backend',
+]
+
+[profile.release]
+lto = true
