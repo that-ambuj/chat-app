@@ -1,34 +1,34 @@
 use actix_web::{
-    get,
+    get, rt,
     web::{self, ServiceConfig},
-    Responder,
+    Error, HttpRequest, HttpResponse,
 };
 use shuttle_actix_web::ShuttleActixWeb;
 
-#[get("/hello")]
+mod chat_server;
+mod handler;
+
+use handler::echo_ws;
+
+#[shuttle_runtime::main]
+async fn actix_web() -> ShuttleActixWeb<impl FnOnce(&mut ServiceConfig) + Send + Clone + 'static> {
+    Ok(route_config.into())
+}
+
+fn route_config(cfg: &mut ServiceConfig) {
+    cfg.service(hello_world).service(ws_handler);
+}
+
+#[get("/")]
 async fn hello_world() -> &'static str {
     "Hello World!"
 }
 
-#[derive(serde::Serialize)]
-pub struct Data {
-    pub name: String,
-    pub age: i32,
-}
+#[get("/ws")]
+async fn ws_handler(req: HttpRequest, stream: web::Payload) -> Result<HttpResponse, Error> {
+    let (res, session, msg_stream) = actix_ws::handle(&req, stream)?;
 
-#[get("/json")]
-async fn json() -> impl Responder {
-    web::Json(Data {
-        name: "hello".into(),
-        age: 20,
-    })
-}
+    rt::spawn(echo_ws(session, msg_stream));
 
-#[shuttle_runtime::main]
-async fn actix_web() -> ShuttleActixWeb<impl FnOnce(&mut ServiceConfig) + Send + Clone + 'static> {
-    let config = move |cfg: &mut ServiceConfig| {
-        cfg.service(hello_world).service(json);
-    };
-
-    Ok(config.into())
+    Ok(res)
 }
