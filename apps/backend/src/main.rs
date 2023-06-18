@@ -9,6 +9,7 @@ use shuttle_actix_web::ShuttleActixWeb;
 use tokio::sync::mpsc;
 
 mod handler;
+mod chat_server;
 
 use handler::chat_ws;
 use tokio::task::spawn_local;
