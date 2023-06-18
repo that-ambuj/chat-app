@@ -367,24 +367,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "backend"
-version = "0.1.0"
-dependencies = [
- "actix-web",
- "actix-ws",
- "fastrand",
- "futures",
- "futures-util",
- "log",
- "shuttle",
- "shuttle-actix-web",
- "shuttle-runtime",
- "tokio",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
 name = "base64"
 version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1596,6 +1578,24 @@ dependencies = [
  "byteorder",
  "rmp",
  "serde",
+]
+
+[[package]]
+name = "rust-angular-chat-app"
+version = "0.1.0"
+dependencies = [
+ "actix-web",
+ "actix-ws",
+ "fastrand",
+ "futures",
+ "futures-util",
+ "log",
+ "shuttle",
+ "shuttle-actix-web",
+ "shuttle-runtime",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
