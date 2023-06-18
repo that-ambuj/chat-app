@@ -1,7 +1,11 @@
 use actix_ws::{CloseReason, Message as WsMessage, MessageStream, Session};
 use futures_util::StreamExt;
 use std::time::{Duration, Instant};
-use tokio::{select, sync::mpsc, time::interval};
+use tokio::{
+    select,
+    sync::mpsc,
+    time::{interval, MissedTickBehavior},
+};
 
 use crate::chat_server::{ChatServerHandle, ConnId};
 
@@ -23,6 +27,8 @@ pub async fn chat_ws(
 
     let mut last_heartbeat = Instant::now();
     let mut interval = interval(HEARTBEAT_INTERVAL);
+
+    interval.set_missed_tick_behavior(MissedTickBehavior::Skip);
 
     let (conn_tx, mut conn_rx) = mpsc::unbounded_channel();
 
