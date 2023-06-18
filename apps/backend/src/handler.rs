@@ -1,50 +1,38 @@
 use actix_ws::{CloseReason, Message as WsMessage, MessageStream, Session};
 use futures_util::StreamExt;
-use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::{select, sync::mpsc, time::interval};
 
-use crate::AppState;
+use crate::chat_server::{ChatServerHandle, ConnId};
 
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
 
-pub async fn chat_ws(mut ctx: Session, mut msg_stream: MessageStream, state: Arc<AppState>) {
+#[derive(serde::Deserialize)]
+struct ChatMessage {
+    message: String,
+    to: Option<ConnId>,
+}
+
+pub async fn chat_ws(
+    mut ctx: Session,
+    mut msg_stream: MessageStream,
+    cmd_handle: ChatServerHandle,
+) {
     tracing::info!("Connected to Websocket");
 
     let mut last_heartbeat = Instant::now();
     let mut interval = interval(HEARTBEAT_INTERVAL);
 
-    let new_id = fastrand::usize(..9999);
-    let (msg_tx, mut msg_rx) = mpsc::unbounded_channel();
+    let (conn_tx, mut conn_rx) = mpsc::unbounded_channel();
 
-    {
-        let mut sessions = state.sessions.lock().unwrap();
-        sessions.insert(new_id, msg_tx);
-        dbg!(&sessions.len());
-    }
+    let conn_id = cmd_handle.connect(conn_tx).await;
 
-    tracing::info!("User {new_id} connected.");
+    tracing::debug!("User {conn_id} connected.");
 
     let reason = loop {
-        // create "next client timeout check" future
-        // let tick = interval.tick();
-        // let ws_messages = msg_stream.next();
-
         select! {
-            Some(message) = msg_rx.recv() => {
-                last_heartbeat = Instant::now();
-                ctx.text(message).await.unwrap();
-            }
-
-            Some(Ok(ws_msg)) = msg_stream.next() => {
-                tracing::debug!("Recieved ws_msg: {ws_msg:?}");
-
-                if let Err(reason) = process_ws_msg(ws_msg, &mut last_heartbeat, &mut ctx, new_id, state.clone()).await {
-                    break reason;
-                }
-            }
-
+            biased;
             _ = interval.tick() => {
                 if Instant::now().duration_since(last_heartbeat) > CLIENT_TIMEOUT {
                     tracing::warn!("Client has not sent any heartbeats for more that {CLIENT_TIMEOUT:?}; disconnecting.");
@@ -54,31 +42,59 @@ pub async fn chat_ws(mut ctx: Session, mut msg_stream: MessageStream, state: Arc
                 // send heartbeat ping
                 let _ = ctx.ping(b"").await;
             }
+
+            Some(message) = conn_rx.recv() => {
+                last_heartbeat = Instant::now();
+                ctx.text(message).await.unwrap();
+            }
+
+            Some(Ok(ws_msg)) = msg_stream.next() => {
+                tracing::debug!("Recieved ws_msg: {ws_msg:?}");
+
+                if let Err(reason) = process_ws_msg(
+                    ws_msg,
+                    &mut last_heartbeat,
+                    &mut ctx,
+                    conn_id,
+                    cmd_handle.clone())
+                    .await
+                {
+                    break reason;
+                }
+            }
         }
     };
 
     // attempt to close connection gracefully
     let _ = ctx.close(reason).await;
+    cmd_handle.disconnect(conn_id).await;
 
-    tracing::info!("User {new_id:?} disconnected");
+    tracing::debug!("User {conn_id} disconnected");
 }
 
 async fn process_ws_msg(
     msg: WsMessage,
     last_heartbeat: &mut Instant,
     ctx: &mut Session,
-    skip_id: usize,
-    state: Arc<AppState>,
+    from: ConnId,
+    cmd_handle: ChatServerHandle,
 ) -> Result<(), Option<CloseReason>> {
     use WsMessage::*;
 
     match msg {
         Text(txt) => {
-            for (id, msg_tx) in state.sessions.lock().unwrap().iter() {
-                if *id != skip_id {
-                    msg_tx.send(txt.clone().into()).unwrap();
-                }
+            let chat_message = serde_json::from_str::<ChatMessage>(&txt.to_string()).unwrap();
+
+            if chat_message.message == "/list" {
+                let users = cmd_handle.list_users().await;
+                let _ = ctx.text(serde_json::to_string(&users).unwrap()).await;
+
+                return Ok(());
             }
+
+            cmd_handle
+                .send_message(&chat_message.message, from, chat_message.to)
+                .await;
 
             Ok(())
         }
