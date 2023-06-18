@@ -9,7 +9,7 @@ use tokio::{
 
 use crate::chat_server::{ChatServerHandle, ConnId};
 
-const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
+const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(3);
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
 
 #[derive(serde::Deserialize)]
