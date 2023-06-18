@@ -15,7 +15,6 @@ shuttle-runtime = "0.18.0"
 tokio = { version = "1.28.2", features = ["rt-multi-thread", "macros", "tracing"] }
 tracing = "0.1.37"
 tracing-subscriber = "0.3.17"
-chat-app-api = { path = "../../libs/api/", version = "*" }
 fastrand = "2.0.0"
 log = "0.4.19"
 
