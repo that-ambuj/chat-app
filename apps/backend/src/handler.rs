@@ -31,7 +31,6 @@ pub async fn chat_ws(
     interval.set_missed_tick_behavior(MissedTickBehavior::Skip);
 
     let (conn_tx, mut conn_rx) = mpsc::unbounded_channel();
-
     let conn_id = cmd_handle.connect(conn_tx).await;
 
     tracing::debug!("User {conn_id} connected.");
@@ -51,7 +50,7 @@ pub async fn chat_ws(
 
             Some(message) = conn_rx.recv() => {
                 last_heartbeat = Instant::now();
-                ctx.text(message).await.unwrap();
+                ctx.text(serde_json::to_string(&message).unwrap()).await.unwrap();
             }
 
             Some(Ok(ws_msg)) = msg_stream.next() => {

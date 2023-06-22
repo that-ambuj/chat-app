@@ -8,7 +8,14 @@ use std::{
 use tokio::sync::{mpsc, oneshot};
 
 pub type ConnId = usize;
-pub type Message = String;
+// pub type Message = String;
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct Message {
+    pub message: String,
+    pub to: Option<ConnId>,
+    pub from: ConnId,
+}
 
 pub struct ChatServer {
     sessions: HashMap<ConnId, mpsc::UnboundedSender<Message>>,
@@ -32,8 +39,6 @@ pub enum Command {
     },
     Message {
         message: Message,
-        from: ConnId,
-        to: Option<ConnId>,
         res_tx: oneshot::Sender<()>,
     },
     List {
@@ -55,28 +60,40 @@ impl ChatServer {
         )
     }
 
-    async fn send_all(&self, skip: ConnId, message: &str) {
+    async fn send_all(&self, skip: ConnId, message: &Message) {
         for (id, msg_tx) in self.sessions.iter() {
             if *id != skip {
                 // errors if client disconnected abruptly and hasn't been timed-out yet
-                let _ = msg_tx.send(message.into());
+                let _ = msg_tx.send(message.clone());
             }
         }
     }
 
-    async fn broadcast_message(&self, message: &str) {
+    async fn broadcast_message(&self, from: ConnId, message: &str) {
+        let msg = Message {
+            message: message.into(),
+            from,
+            to: None,
+        };
+
         for (_, msg_tx) in self.sessions.iter() {
-            let _ = msg_tx.send(message.into());
+            let _ = msg_tx.send(msg.clone());
         }
     }
 
-    async fn send_message(&self, skip: ConnId, to: Option<ConnId>, message: &str) {
+    async fn send_message(&self, msg: &Message) {
+        let Message {
+            message: _,
+            to,
+            from,
+        } = msg;
+
         if let Some(to) = to {
             if let Some(msg_tx) = self.sessions.get(&to) {
-                let _ = msg_tx.send(message.into());
+                let _ = msg_tx.send(msg.clone());
             }
         } else {
-            self.send_all(skip, message).await;
+            self.send_all(*from, msg).await;
         }
     }
 
@@ -86,9 +103,10 @@ impl ChatServer {
         self.sessions.insert(id, conn_tx);
 
         let count = self.visitor_count.fetch_add(1, Ordering::SeqCst);
-        self.broadcast_message(&format!(
-            "User {id} just connected.(Visitor count: {count})"
-        ))
+        self.broadcast_message(
+            id,
+            &format!("User {id} just connected.(Visitor count: {count})"),
+        )
         .await;
 
         id
@@ -103,9 +121,10 @@ impl ChatServer {
         if self.sessions.remove(&conn).is_some() {
             let count = self.visitor_count.fetch_sub(1, Ordering::SeqCst);
 
-            self.broadcast_message(&format!(
-                "User {conn} just disconnected.(Visitor count: {count})"
-            ))
+            self.broadcast_message(
+                conn,
+                &format!("User {conn} just disconnected.(Visitor count: {count})"),
+            )
             .await;
         }
     }
@@ -122,13 +141,8 @@ impl ChatServer {
                 Disconnect { conn } => {
                     self.disconnect(conn).await;
                 }
-                Message {
-                    message,
-                    from,
-                    to,
-                    res_tx,
-                } => {
-                    self.send_message(from, to, &message).await;
+                Message { message, res_tx } => {
+                    self.send_message(&message).await;
                     let _ = res_tx.send(());
                 }
                 List { res_tx } => {
@@ -167,11 +181,15 @@ impl ChatServerHandle {
     pub async fn send_message(&self, message: &str, from: ConnId, to: Option<ConnId>) {
         let (res_tx, res_rx) = oneshot::channel();
 
+        let msg = Message {
+            message: message.into(),
+            from,
+            to,
+        };
+
         self.cmd_tx
             .send(Command::Message {
-                message: message.into(),
-                from,
-                to,
+                message: msg,
                 res_tx,
             })
             .unwrap();
