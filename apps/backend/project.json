@@ -50,7 +50,8 @@
       }
     },
     "deploy": {
-      "command": "cargo-shuttle deploy"
+      "command": "cargo-shuttle deploy",
+      "dependsOn": "frontend:build"
     }
   },
   "tags": []
