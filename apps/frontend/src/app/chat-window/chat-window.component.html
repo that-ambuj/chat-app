@@ -1,9 +1,9 @@
-<div class="bg-neutral-900 h-full rounded-lg flex flex-col py-2 px-4">
+<div class="bg-neutral-900 h-full rounded-lg flex flex-col py-3 px-4">
   <div
     *ngFor="let msg of messages"
-    class="w-fit px-4 py-1 my-1 rounded-md max-w-md text-left"
+    class="w-fit px-4 py-1 my-1 rounded-md max-w-md text-left overflow-y-auto"
     [ngClass]="
-      msg.to === user
+      msg.from === this.chatService.userId
         ? 'bg-neutral-300 text-black self-end font-medium'
         : 'bg-neutral-800 text-white self-start'
     "

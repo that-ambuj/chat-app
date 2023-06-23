@@ -1,16 +1,20 @@
 import { Component } from '@angular/core';
-import { ApiMessage } from '@chat-app/types';
+import { WsMessage } from '@chat-app/types';
+import { ChatService } from '../chat.service';
 
 @Component({
   selector: 'chat-app-chat-window',
   templateUrl: './chat-window.component.html',
+  providers: [ChatService],
 })
 export class ChatWindowComponent {
-  user = 2736;
+  messages: WsMessage[] = [];
+  userId: number;
 
-  messages: ApiMessage[] = [
-    { message: 'Hello', to: 2736 },
-    { message: 'Hi from Angular', to: 4589 },
-    { message: 'Hello from React', to: 3013 },
-  ];
+  constructor(public chatService: ChatService) {
+    this.chatService.messages.subscribe((msg) => {
+      this.messages.push(msg);
+    });
+    this.userId = this.chatService.userId;
+  }
 }
