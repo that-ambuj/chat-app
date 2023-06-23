@@ -2,8 +2,7 @@ import { Injectable } from '@angular/core';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { Subject } from 'rxjs';
 import { Message } from '@chat-app/types';
-
-const WS_ENDPOINT = 'ws://localhost:8000/ws';
+import { WS_ENDPOINT } from './environment';
 
 @Injectable({
   providedIn: 'root',
