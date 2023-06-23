@@ -36,20 +36,21 @@
       }
     },
     "run": {
-      "executor": "@monodon/rust:run",
+      "command": "cargo-shuttle run",
       "outputs": ["{options.target-dir}"],
       "options": {
         "target-dir": "dist/target/backend"
-      },
-      "configurations": {
-        "production": {
-          "release": true
-        }
       }
     },
     "dev": {
       "command": "cargo watch -cx \"shuttle run\"",
-      "outputs": ["target"]
+      "outputs": ["{options.target-dir}"],
+      "options": {
+        "target-dir": "dist/target/backend"
+      }
+    },
+    "deploy": {
+      "command": "cargo-shuttle deploy"
     }
   },
   "tags": []
