@@ -13,7 +13,7 @@ const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(3);
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
 
 #[derive(serde::Deserialize)]
-struct ChatMessage {
+struct IncomingMessage {
     message: String,
     to: Option<ConnId>,
 }
@@ -23,7 +23,7 @@ pub async fn chat_ws(
     mut msg_stream: MessageStream,
     cmd_handle: ChatServerHandle,
 ) {
-    tracing::info!("Connected to Websocket");
+    tracing::debug!("Connected to Websocket");
 
     let mut last_heartbeat = Instant::now();
     let mut interval = interval(HEARTBEAT_INTERVAL);
@@ -88,7 +88,7 @@ async fn process_ws_msg(
 
     match msg {
         Text(txt) => {
-            let chat_message = serde_json::from_str::<ChatMessage>(&txt.to_string()).unwrap();
+            let chat_message = serde_json::from_str::<IncomingMessage>(&txt.to_string()).unwrap();
 
             if chat_message.message == "/list" {
                 let users = cmd_handle.list_users().await;

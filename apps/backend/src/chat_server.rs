@@ -60,15 +60,6 @@ impl ChatServer {
         )
     }
 
-    async fn send_all(&self, skip: ConnId, message: &Message) {
-        for (id, msg_tx) in self.sessions.iter() {
-            if *id != skip {
-                // errors if client disconnected abruptly and hasn't been timed-out yet
-                let _ = msg_tx.send(message.clone());
-            }
-        }
-    }
-
     async fn broadcast_message(&self, from: ConnId, message: &str) {
         let msg = Message {
             message: message.into(),
@@ -93,7 +84,7 @@ impl ChatServer {
                 let _ = msg_tx.send(msg.clone());
             }
         } else {
-            self.send_all(*from, msg).await;
+            self.broadcast_message(*from, &msg.message).await;
         }
     }
 
