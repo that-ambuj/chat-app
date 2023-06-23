@@ -15,7 +15,6 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@chat-app/common-ui": ["libs/common-ui/src/index.ts"],
       "@chat-app/types": ["libs/types/src/index.ts"]
     }
   },
