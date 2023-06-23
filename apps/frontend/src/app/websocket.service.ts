@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { Subject } from 'rxjs';
-import { WsMessage } from '@chat-app/types';
+import { Message } from '@chat-app/types';
 
 const WS_ENDPOINT = 'ws://localhost:8000/ws';
 
@@ -9,11 +9,11 @@ const WS_ENDPOINT = 'ws://localhost:8000/ws';
   providedIn: 'root',
 })
 export class WebsocketService {
-  private wsSubject!: WebSocketSubject<WsMessage>;
+  private wsSubject!: WebSocketSubject<Message>;
 
   constructor() {}
 
-  public connect(): Subject<WsMessage> {
+  public connect(): Subject<Message> {
     if (!this.wsSubject) {
       this.wsSubject = webSocket(WS_ENDPOINT);
       console.log('Connected to Websocket: ', WS_ENDPOINT);

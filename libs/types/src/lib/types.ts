@@ -1,4 +1,5 @@
-export type ApiMessage = {
+export type Message = {
   message: string;
+  from: number;
   to?: number;
 };

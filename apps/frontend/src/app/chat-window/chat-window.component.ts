@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { WsMessage } from '@chat-app/types';
+import { Message } from '@chat-app/types';
 import { ChatService } from '../chat.service';
 
 @Component({
@@ -8,7 +8,7 @@ import { ChatService } from '../chat.service';
   providers: [ChatService],
 })
 export class ChatWindowComponent {
-  messages: WsMessage[] = [];
+  messages: Message[] = [];
   userId: number;
 
   constructor(public chatService: ChatService) {

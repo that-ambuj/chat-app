@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import { WebsocketService } from './websocket.service';
-import { WsMessage } from '@chat-app/types';
+import { Message } from '@chat-app/types';
 import { Subject, first } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ChatService {
-  public messages: Subject<WsMessage>;
+  public messages: Subject<Message>;
   public userId!: number;
 
   constructor(private wsService: WebsocketService) {
