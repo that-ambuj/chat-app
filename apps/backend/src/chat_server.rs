@@ -53,7 +53,7 @@ impl ChatServer {
         (
             ChatServer {
                 sessions: HashMap::new(),
-                visitor_count: Arc::new(AtomicUsize::new(1)),
+                visitor_count: Arc::new(AtomicUsize::new(0)),
                 cmd_rx,
             },
             ChatServerHandle { cmd_tx },
@@ -94,9 +94,10 @@ impl ChatServer {
         self.sessions.insert(id, conn_tx);
 
         let count = self.visitor_count.fetch_add(1, Ordering::SeqCst);
+
         self.broadcast_message(
             id,
-            &format!("User {id} just connected.(Visitor count: {count})"),
+            &format!("User {} just connected.(Visitor count: {})", id, count + 1),
         )
         .await;
 
@@ -114,7 +115,11 @@ impl ChatServer {
 
             self.broadcast_message(
                 conn,
-                &format!("User {conn} just disconnected.(Visitor count: {count})"),
+                &format!(
+                    "User {} just disconnected.(Visitor count: {})",
+                    conn,
+                    count - 1
+                ),
             )
             .await;
         }
