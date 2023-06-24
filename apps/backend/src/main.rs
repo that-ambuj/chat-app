@@ -1,9 +1,11 @@
+use actix_files as fs;
 use actix_web::{
     get,
     web::{self, ServiceConfig},
     Error, HttpRequest, HttpResponse,
 };
 use shuttle_actix_web::ShuttleActixWeb;
+use std::path::PathBuf;
 use tokio::task::spawn_local;
 
 mod chat_server;
@@ -13,23 +15,19 @@ use chat_server::{ChatServer, ChatServerHandle};
 use handler::chat_ws;
 
 #[shuttle_runtime::main]
-async fn actix_web() -> ShuttleActixWeb<impl FnOnce(&mut ServiceConfig) + Send + Clone + 'static> {
+async fn actix_web(
+    #[shuttle_static_folder::StaticFolder] static_folder: PathBuf,
+) -> ShuttleActixWeb<impl FnOnce(&mut ServiceConfig) + Send + Clone + 'static> {
     let (chat_server, cmd_handle) = ChatServer::new();
-
     tokio::spawn(chat_server.run());
 
     let config = move |cfg: &mut ServiceConfig| {
-        cfg.service(hello_world)
+        cfg.app_data(web::Data::new(cmd_handle))
             .service(ws_handler)
-            .app_data(web::Data::new(cmd_handle));
+            .service(fs::Files::new("", static_folder).index_file("index.html"));
     };
 
     Ok(config.into())
-}
-
-#[get("/")]
-async fn hello_world() -> &'static str {
-    "Hello World!"
 }
 
 #[get("/ws")]
