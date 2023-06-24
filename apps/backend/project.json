@@ -52,6 +52,9 @@
     "deploy": {
       "command": "cargo-shuttle deploy --name angular-rust-chat-app",
       "dependsOn": ["frontend:build:production"]
+    },
+    "logs": {
+      "command": "cargo-shuttle logs --name angular-rust-chat-app --latest"
     }
   },
   "tags": []
