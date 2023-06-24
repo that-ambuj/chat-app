@@ -50,7 +50,7 @@
       }
     },
     "deploy": {
-      "command": "cargo-shuttle deploy --name rust-angular-chat-app",
+      "command": "cargo-shuttle deploy --name angular-rust-chat-app",
       "dependsOn": ["frontend:build:production"]
     }
   },
