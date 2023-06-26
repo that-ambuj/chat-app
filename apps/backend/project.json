@@ -39,9 +39,12 @@
       "command": "cargo-shuttle run",
       "outputs": ["{options.target-dir}"],
       "options": {
-        "target-dir": "dist/target/backend"
+        "target-dir": "dist/target/backend",
+        "outputPath": "apps/backend/static"
       },
-      "dependsOn": ["frontend:build:development"]
+      "dependsOn": [
+        { "projects": ["frontend"], "target": "build", "params": "forward" }
+      ]
     },
     "dev": {
       "command": "cargo watch -cx \"shuttle run\"",
@@ -52,7 +55,7 @@
     },
     "deploy": {
       "command": "cargo-shuttle deploy",
-      "dependsOn": ["frontend:build:production"]
+      "dependsOn": [{ "projects": ["frontend"], "target": "build" }]
     },
     "logs": {
       "command": "cargo-shuttle logs --latest"
