@@ -2,6 +2,8 @@
 
 This is a simple Chat App built using [Rust](https://www.rust-lang.org/), [Actix-Web](https://actix.rs), [Angular](https://angular.io) and Websockets.
 
+Live Demo: https://that-ambuj-chat-app.shuttleapp.rs/
+
 ## Dependencies
 
 This project requires certain dependencies to be install in order to run this app.
