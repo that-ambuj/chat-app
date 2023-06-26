@@ -40,7 +40,8 @@
       "outputs": ["{options.target-dir}"],
       "options": {
         "target-dir": "dist/target/backend"
-      }
+      },
+      "dependsOn": ["frontend:build:development"]
     },
     "dev": {
       "command": "cargo watch -cx \"shuttle run\"",
