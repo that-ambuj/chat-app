@@ -10,7 +10,7 @@
       "executor": "@angular-devkit/build-angular:browser",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "apps/backend/static",
+        "outputPath": "static",
         "index": "apps/frontend/src/index.html",
         "main": "apps/frontend/src/main.ts",
         "polyfills": ["zone.js"],
@@ -36,6 +36,7 @@
           "outputHashing": "all"
         },
         "development": {
+          "outputPath": "apps/backend/static",
           "buildOptimizer": false,
           "optimization": false,
           "vendorChunk": true,
