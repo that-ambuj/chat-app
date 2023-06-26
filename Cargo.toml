@@ -1,7 +1,6 @@
 [workspace]
-members = [
-	'apps/backend',
-]
+members = ['apps/backend']
+default-members = ["apps/backend"]
 
 [profile.release]
 lto = true
