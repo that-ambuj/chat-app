@@ -53,6 +53,9 @@
         "target-dir": "dist/target/backend"
       }
     },
+    "clean": {
+      "command": "cargo-shuttle clean"
+    },
     "deploy": {
       "command": "cargo-shuttle deploy",
       "dependsOn": [{ "projects": ["frontend"], "target": "build" }]
