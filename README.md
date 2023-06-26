@@ -1,8 +1,10 @@
 # Actix + Angular ChatApp
 
-This is a simple Chat App built using [Rust](https://www.rust-lang.org/), [Actix-Web](https://actix.rs), [Angular](https://angular.io) and Websockets.
+> A simple Chat App built using [Rust](https://www.rust-lang.org/), [Actix-Web](https://actix.rs), [Angular](https://angular.io) and Websockets.
 
 Live Demo: https://that-ambuj-chat-app.shuttleapp.rs/
+
+Tip: Open two or more browser windows to see realtime updates.
 
 ## Dependencies
 
