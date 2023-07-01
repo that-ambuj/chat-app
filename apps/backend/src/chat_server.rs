@@ -12,7 +12,7 @@ pub type ConnId = usize;
 
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct Message {
-    pub message: String,
+    pub message: Arc<str>,
     pub to: Option<ConnId>,
     pub from: ConnId,
 }

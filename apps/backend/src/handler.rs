@@ -1,5 +1,6 @@
 use actix_ws::{CloseReason, Message as WsMessage, MessageStream, Session};
 use futures_util::StreamExt;
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tokio::{
     select,
@@ -14,7 +15,7 @@ const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
 
 #[derive(serde::Deserialize)]
 struct IncomingMessage {
-    message: String,
+    message: Arc<str>,
     to: Option<ConnId>,
 }
 
@@ -90,7 +91,7 @@ async fn process_ws_msg(
         Text(txt) => {
             let chat_message = serde_json::from_str::<IncomingMessage>(&txt.to_string()).unwrap();
 
-            if chat_message.message == "/list" {
+            if chat_message.message == "/list".into() {
                 let users = cmd_handle.list_users().await;
                 let _ = ctx.text(serde_json::to_string(&users).unwrap()).await;
 
