@@ -23,7 +23,7 @@ pub async fn chat_ws(
     mut msg_stream: MessageStream,
     cmd_handle: ChatServerHandle,
 ) {
-    tracing::debug!("Connected to Websocket");
+    tracing::trace!("Connected to Websocket");
 
     let mut last_heartbeat = Instant::now();
     let mut interval = interval(HEARTBEAT_INTERVAL);
@@ -33,7 +33,7 @@ pub async fn chat_ws(
     let (conn_tx, mut conn_rx) = mpsc::unbounded_channel();
     let conn_id = cmd_handle.connect(conn_tx).await;
 
-    tracing::debug!("User {conn_id} connected.");
+    tracing::trace!("User {conn_id} connected.");
 
     let reason = loop {
         select! {
@@ -54,7 +54,7 @@ pub async fn chat_ws(
             }
 
             Some(Ok(ws_msg)) = msg_stream.next() => {
-                tracing::debug!("Recieved ws_msg: {ws_msg:?}");
+                tracing::trace!("Recieved ws_msg: {ws_msg:?}");
 
                 if let Err(reason) = process_ws_msg(
                     ws_msg,
@@ -74,7 +74,7 @@ pub async fn chat_ws(
     let _ = ctx.close(reason).await;
     cmd_handle.disconnect(conn_id).await;
 
-    tracing::debug!("User {conn_id} disconnected");
+    tracing::trace!("User {conn_id} disconnected");
 }
 
 async fn process_ws_msg(

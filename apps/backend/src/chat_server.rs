@@ -10,6 +10,7 @@ use tokio::sync::{mpsc, oneshot};
 pub type ConnId = usize;
 // pub type Message = String;
 
+/// Message transferred across websockets
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct Message {
     pub message: String,
